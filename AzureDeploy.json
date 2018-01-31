@@ -324,7 +324,6 @@
                 "osDisk": {
                     "name": "fwosdisk",
                     "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
                     },
                     "caching": "ReadWrite",
                     "createOption": "FromImage",
