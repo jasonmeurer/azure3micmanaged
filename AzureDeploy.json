@@ -301,9 +301,9 @@
          "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '2')]"
       ],
         "plan": {
-           "name": "[parameters('imageSku')]",
-           "product": "[variables('imageOffer')]",
-           "publisher": "[variables('imagePublisher')]"
+                "name": "byol",
+                "product": "vmseries1-beta-preview",
+                "publisher": "paloaltonetworks"
         },
         "properties": {
             "hardwareProfile": {
