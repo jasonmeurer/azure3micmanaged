@@ -1,6 +1,6 @@
 # Azure - Palo Alto VMSeries Firewall into existing environment
 
-[<img src="http://azuredeploy.net/deploybutton.png"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjasonmeurer%2Fazure3micmanaged%2Fmaster%2FAzureDeploy.json)
+[<img src="http://azuredeploy.net/deploybutton.png"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fwahidsaleemi%2Fazure3micmanaged%2Fmaster%2FAzureDeploy.json)
 
 This template was created to support the deployment of a 3 interface Palo Alto Networks firewall into an existing Microsoft Azure environment that has the following items already deployed:
 
@@ -22,13 +22,13 @@ The following Storage Account types are supported for Managed Disks:
 
 The following VM sizes are supported:
 
-                    -Standard_D3
-                    -Standard_D4
-                    -Standard_D3_v2
-                    -Standard_D4_v2
-                    -Standard_A4
-                    -Standard_DS3_v2
-                    -Standard_DS4_v2
+    - Standard_D3
+    - Standard_D4
+    - Standard_D3_v2
+    - Standard_D4_v2
+    - Standard_A4
+    - Standard_DS3_v2
+    - Standard_DS4_v2
 
 ## DEPLOYMENT
 
@@ -63,6 +63,7 @@ For CLI, the password must be stored as a secret in Azure Key Vault. See [Azure 
 - Removed Subnet variable, it is not used. Also, this template requires an existing VNET and Subnets.
 - Changed compute api version to 2018-06-01. Updated network api to 2017-10-01.
 - Removed the defaultValue of the VNET from 192.168.0.0/16, it is not used.
+- Removed SubnetPrefix parameters and nsgName parameters, not used.
 - Changed nicName variable from "eth" to "Nic" since a single NIC could have multiple IP configs (eth0, eth1)
 - Changed NIC names to be more descriptive instead of using numbers (0,1,2)
 - Changed publicIPAddressName to use variables in Resource section to avoid mistakes if users enter upper case characters (not allowed)

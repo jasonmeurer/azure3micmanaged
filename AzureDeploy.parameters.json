@@ -51,24 +51,6 @@
             "description": "Subnet for Trust"
           }
         },
-        "subnet0Prefix": {
-          "value": "192.168.1.0/28",
-          "metadata": {
-            "description": "Mgmt subnet CIDR"
-          }
-        },
-        "subnet1Prefix": {
-          "value": "192.168.1.16/28",
-          "metadata": {
-            "description": "Untrust subnet CIDR"
-          }
-        },
-        "subnet2Prefix": {
-          "value": "192.168.1.32/28",
-          "metadata": {
-            "description": "Trust subnet CIDR"
-          }
-        },
         "subnet0StartAddress": {
           "value": "192.168.1.4",
           "metadata": {
@@ -116,12 +98,6 @@
           "metadata": {
             "description": "Firewall License Model"
           }
-        },
-        "nsgName": {
-          "value": "subnet-nsg",
-          "metadata": {
-            "description": "Name of existing Network Security Group for MGMT FW interface"
-          }
-        } 
+        }
     }
 }  

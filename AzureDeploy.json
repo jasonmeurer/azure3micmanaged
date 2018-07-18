@@ -103,27 +103,6 @@
         "description": "EXISTING Subnet for Trust"
       }
     },
-    "subnet0Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/24",
-      "metadata": {
-        "description": "EXISTING Mgmt subnet CIDR"
-      }
-    },
-    "subnet1Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.1.0/24",
-      "metadata": {
-        "description": "EXISTING Untrust subnet CIDR"
-      }
-    },
-    "subnet2Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.2.0/24",
-      "metadata": {
-        "description": "EXISTING Trust subnet CIDR"
-      }
-    },
     "subnet0StartAddress": {
       "type": "string",
       "defaultValue": "192.168.0.4",
@@ -163,14 +142,7 @@
       "metadata": {
         "description": "Name of FW1 MGMT Public Address"
       }
-    },
-    "nsgName": {
-      "type": "string",
-      "defaultValue": "DefaultNSG",
-      "metadata": {
-        "description": "Name of existing Network Security Group for MGMT FW interface"
-      }
-    }  
+    } 
   },
   "variables": {
     "imagePublisher": "paloaltonetworks",
