@@ -9,6 +9,18 @@
             "Application": "changeme"
           }
         },
+        "virtualNetworkName": {
+          "metadata": {
+            "description": "Name of the Virtual Network (VNET)"
+          },
+          "value": "fw-eastus2-vnet"
+        },
+        "virtualNetworkExistingRGName": {
+          "value": "rg-hubnetwork",
+          "metadata": {
+            "description": "Name of resource group of existing VNET (if applicable)"
+          }
+        },
         "vmName": {
           "metadata": {
               "description": "Name of VM-Series FW in the Azure portal"
@@ -20,18 +32,6 @@
               "description": "Azure VM size for VM-Series"
           },
           "value": "Standard_DS3_v2"
-        },
-        "virtualNetworkName": { 
-          "metadata": {
-            "description": "Name of the Virtual Network (VNET)"
-          },
-          "value": "fw-eastus2-vnet"
-        },
-        "virtualNetworkExistingRGName": {
-          "value": "rg-hubnetwork",
-          "metadata": {
-            "description": "Name of resource group of existing VNET (if applicable)"
-          }
         },
         "subnet0Name": {
           "value": "fw-eastus2-subnet-mgmt",
