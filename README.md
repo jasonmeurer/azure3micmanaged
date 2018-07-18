@@ -16,9 +16,9 @@ This template was created to support the deployment of a 3 interface Palo Alto N
 
 The following Storage Account types are supported for Managed Disks:
 
-  - Standard_LRS
-  - Premium_LRS
-  - StandardSSD_LRS
+    - Standard_LRS
+    - Premium_LRS
+    - StandardSSD_LRS
 
 The following VM sizes are supported:
 
@@ -46,7 +46,7 @@ When deploying, specify the password in SecureString format (PowerShell only), o
 
 For CLI, the password must be stored as a secret in Azure Key Vault. See [Azure Docs](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli#sample-template). Then deploy as normal:
 
-```ruby
+```java
   az group deployment create --name exampledeployment --resource-group rg-firewall \
   --template-file azuredeploy.json --parameters @azuredeploy.parameters.json
 ```
@@ -62,7 +62,7 @@ For CLI, the password must be stored as a secret in Azure Key Vault. See [Azure 
 - Removed virtualNetworkAddressPrefix parameter. It is not used.
 - Removed Subnet variable, it is not used. Also, this template requires an existing VNET and Subnets.
 - Changed compute api version to 2018-06-01. Updated network api to 2017-10-01.
-- Changed the defaultValue of the VNET from 192.168.0.0/16, which would give you routable internet addresses to 192.168.1.0/24
+- Removed the defaultValue of the VNET from 192.168.0.0/16, it is not used.
 - Changed nicName variable from "eth" to "Nic" since a single NIC could have multiple IP configs (eth0, eth1)
 - Changed NIC names to be more descriptive instead of using numbers (0,1,2)
 - Changed publicIPAddressName to use variables in Resource section to avoid mistakes if users enter upper case characters (not allowed)
