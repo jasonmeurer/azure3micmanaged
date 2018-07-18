@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.13",
+  "contentVersion": "1.0.0.1",
   "parameters": {
     "tagvalues": {
       "type": "object",
@@ -9,7 +9,19 @@
         "Department": "changeme",
         "Application": "changeme"
         }
-    },   
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the EXISTING Virtual Network (VNET)"
+      }
+    },
+    "virtualNetworkExistingRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of resource group of EXISTING VNET"
+      }
+    }, 
     "vmName": {
        "type": "string",
        "metadata": {
@@ -54,7 +66,7 @@
        "metadata": {
           "description": "PAN OS Version"
        },
-       "defaultValue": "7.1.1"
+       "defaultValue": "latest"
     },
     "imageSku": {
        "type": "string",
@@ -67,20 +79,6 @@
           "description": "Firewall License Model"
        },
        "defaultValue": "bundle2"
-    },
-    "virtualNetworkName": { 
-      "type": "string",
-      "metadata": {
-        "description": "Name of the EXISTING Virtual Network (VNET)"
-      },
-      "defaultValue": "fwVNET"
-    },
-    "virtualNetworkExistingRGName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Name of resource group of EXISTING VNET"
-      }
     },
     "subnet0Name": {
       "type": "string",
@@ -128,7 +126,8 @@
       "type": "string",
       "metadata": {
         "description": "Username of the administrator account of VM-Series"
-      }
+      },
+      "defaultValue": "paloalto"
     },
     "adminPassword": {
       "type": "securestring",
@@ -141,7 +140,8 @@
       "type": "string",
       "metadata": {
         "description": "Name of FW1 MGMT Public Address"
-      }
+      },
+      "defaultValue": "VM-FW1-PIP"
     } 
   },
   "variables": {
