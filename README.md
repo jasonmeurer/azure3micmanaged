@@ -1,25 +1,26 @@
-# Azure-Firewall-into-existing-environment
+# Azure - Palo Alto VMSeries Firewall into existing environment
 
 [<img src="http://azuredeploy.net/deploybutton.png"/>](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fjasonmeurer%2Fazure3micmanaged%2Fmaster%2FAzureDeploy.json)
 
-This template was created to support the deployment of a 4 interface Palo Alto Networks firewall into an existing Microsoft Azure environment that has the following items already deployed:
+This template was created to support the deployment of a 3 interface Palo Alto Networks firewall into an existing Microsoft Azure environment that has the following items already deployed:
 
-                    -Azure Virtual Network - with at least 3 subnets
-                    -Resource Group for Firewall (or created at time of deployment)
+- Azure Virtual Network - with at least 3 subnets
+- Resource Group for Firewall (or created at time of deployment)
 
-## FEATURES:
+## FEATURES
 
-- The firewall deploys with 4 interfaces.  1 MGMT and 3 data plane into an existing environment.
+- The firewall deploys with 3 interfaces.  1 MGMT (with Public IP) and 2 data plane into an existing environment.
 - It is possible to choose the version of software the firewall is running. 7.1 or 8.0 (Latest)
 - The deployment SKU can also be choosen during deployment.  BYOL, Bundle1 or Bundle2 are the available options.
 - Static IP addresses assignment is used for all the firewall interfaces.
 
 The following Storage Account types are supported for Managed Disks:
-                -Standard_LRS
-                -Premium_LRS
-                -StandardSSD_LRS
 
-The following VMs are supported:
+  - Standard_LRS
+  - Premium_LRS
+  - StandardSSD_LRS
+
+The following VM sizes are supported:
 
                     -Standard_D3
                     -Standard_D4
@@ -29,25 +30,29 @@ The following VMs are supported:
                     -Standard_DS3_v2
                     -Standard_DS4_v2
 
-## DEPLOYMENT:
+## DEPLOYMENT
+
 When deploying, specify the password in SecureString format (PowerShell only), or by using Key Vault (PowerShell and CLI).
-PowerShell:
+
+### PowerShell
 
 ```powershell
   $secPassword = ConvertTo-SecureString -String "a-strong-password" -AsPlainText -Force
-  New-AzureRmResourceGroupDeployment -ResourceGroupName rg-firewall -TemplateFile .\azuredeploy.json -TemplateParameterFile .\azuredeploy.parameters.json `
-    -Mode Incremental -adminPassword $secPassword -Verbose
+  New-AzureRmResourceGroupDeployment -ResourceGroupName rg-firewall -TemplateFile .\azuredeploy.json `
+    -TemplateParameterFile .\azuredeploy.parameters.json -adminPassword $secPassword -Verbose
 ```
 
-CLI:
+### CLI
+
 For CLI, the password must be stored as a secret in Azure Key Vault. See [Azure Docs](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli#sample-template). Then deploy as normal:
 
+```ruby
+  az group deployment create --name exampledeployment --resource-group rg-firewall \
+  --template-file azuredeploy.json --parameters @azuredeploy.parameters.json
 ```
-  az group deployment create --name exampledeployment --resource-group rg-firewall --template-file azuredeploy.json --parameters @azuredeploy.parameters.json
-```
-
 
 ## CHANGELOG
+
 [2018-07-17]
 
 - Removed references to Storage Accounts in this README.md
@@ -62,6 +67,7 @@ For CLI, the password must be stored as a secret in Azure Key Vault. See [Azure 
 - Changed NIC names to be more descriptive instead of using numbers (0,1,2)
 - Changed publicIPAddressName to use variables in Resource section to avoid mistakes if users enter upper case characters (not allowed)
 - Changed OS disk size to 63 (from 60), to align with S6/P6 Managed Disk SKU.
+- Minor formatting and corrections to README.md (like 3 interfaces instead of 4)
 - Best Practice: Added tags to all resources.
 - Best Practice: Re-arranged key/value pairs in Resources section to align with Azure Docs (name, type, apiVersion, etc.) and for consistency.
 - Best Practice: Added an Availability Set. Even with 1 VM, since you can't add this later and it is not billed anyway.
