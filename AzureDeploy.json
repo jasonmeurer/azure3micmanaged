@@ -25,7 +25,7 @@
     "vmName": {
        "type": "string",
        "metadata": {
-          "description": "Name of VM-Series FW in the Azure portal"
+          "description": "Name of VM-Series FW in the Azure portal."
        },
        "defaultValue": "VM-FW1"
     },
