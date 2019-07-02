@@ -1,26 +1,33 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.13",
+  "contentVersion": "1.0.0.1",
   "parameters": {
+    "tagvalues": {
+      "type": "object",
+      "defaultValue": {
+        "Owner": "changeme",
+        "Department": "changeme",
+        "Application": "changeme"
+        }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the EXISTING Virtual Network (VNET)"
+      }
+    },
+    "virtualNetworkExistingRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of resource group of EXISTING VNET"
+      }
+    }, 
     "vmName": {
        "type": "string",
        "metadata": {
-          "description": "Name of VM-Series FW in the Azure portal"
+          "description": "Name of VM-Series FW in the Azure portal."
        },
        "defaultValue": "VM-FW1"
-    },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the EXISTING storage account used to store the VM's disks"
-      }
-    },
-    "storageAccountExistingRG": {
-       "type": "string",
-       "defaultValue" : "",
-       "metadata": {
-          "description": "Storage Accounts Resource Group."
-       }
     },
     "vmSize": {
        "type": "string",
@@ -36,7 +43,19 @@
        "metadata": {
           "description": "Azure VM size for VM-Series"
        },
-       "defaultValue": "Standard_D3_v2"
+       "defaultValue": "Standard_DS3_v2"
+    },
+    "managedDiskType": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS",
+        "StandardSSD_LRS"
+      ],
+      "metadata": {
+        "description": "The storage account type for the VM's disks."
+      },
+      "defaultValue": "Premium_LRS"
     },
     "imageVersion": {
        "type": "string",
@@ -47,7 +66,7 @@
        "metadata": {
           "description": "PAN OS Version"
        },
-       "defaultValue": "7.1.1"
+       "defaultValue": "latest"
     },
     "imageSku": {
        "type": "string",
@@ -60,27 +79,6 @@
           "description": "Firewall License Model"
        },
        "defaultValue": "bundle2"
-    },
-    "virtualNetworkName": { 
-      "type": "string",
-      "metadata": {
-        "description": "Name of the EXISTING Virtual Network (VNET)"
-      },
-      "defaultValue": "fwVNET"
-    },
-    "virtualNetworkAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/16",
-      "metadata": {
-        "description": "EXISTING Virtual network address CIDR"
-      }
-    },
-    "virtualNetworkExistingRGName": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Name of resource group of EXISTING VNET"
-      }
     },
     "subnet0Name": {
       "type": "string",
@@ -101,27 +99,6 @@
       "defaultValue": "Trust",
       "metadata": {
         "description": "EXISTING Subnet for Trust"
-      }
-    },
-    "subnet0Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/24",
-      "metadata": {
-        "description": "EXISTING Mgmt subnet CIDR"
-      }
-    },
-    "subnet1Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.1.0/24",
-      "metadata": {
-        "description": "EXISTING Untrust subnet CIDR"
-      }
-    },
-    "subnet2Prefix": {
-      "type": "string",
-      "defaultValue": "192.168.2.0/24",
-      "metadata": {
-        "description": "EXISTING Trust subnet CIDR"
       }
     },
     "subnet0StartAddress": {
@@ -149,7 +126,8 @@
       "type": "string",
       "metadata": {
         "description": "Username of the administrator account of VM-Series"
-      }
+      },
+      "defaultValue": "paloalto"
     },
     "adminPassword": {
       "type": "securestring",
@@ -162,81 +140,66 @@
       "type": "string",
       "metadata": {
         "description": "Name of FW1 MGMT Public Address"
-      }
-    },
-    "nsgName": {
-      "type": "string",
-      "defaultValue": "DefaultNSG",
-      "metadata": {
-        "description": "Name of existing Network Security Group for MGMT FW interface"
-      }
-    }  
+      },
+      "defaultValue": "VM-FW1-PIP"
+    } 
   },
   "variables": {
-    "apiVersion": "2017-03-30",
     "imagePublisher": "paloaltonetworks",
     "imageOffer" : "vmseries1",
-    "nicName": "[concat(parameters('vmName'), '-eth')]",
+    "publicIPAddressName": "[toLower(parameters('publicIPAddressName'))]",
+    "nicName": "[concat(parameters('vmName'), '-Nic')]",
+    "nicNameSuffixMgmt": "-mgmt",
+    "nicNameSuffixUntrust": "-untrust",
+    "nicNameSuffixTrust": "-trust",
     "vnetID": "[resourceId(parameters('virtualNetworkExistingRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]",
     "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
     "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet1Name'))]",
     "subnet2Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet2Name'))]",
     "publicIPAddressType": "Dynamic",
-    "subnets": [
-      {
-        "name": "[parameters('subnet0Name')]",
-        "properties": {
-          "addressPrefix": "[parameters('subnet0Prefix')]",
-          "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
-          }
-        }
-      },
-      {
-        "name": "[parameters('subnet1Name')]",
-        "properties": {
-          "addressPrefix": "[parameters('subnet1Prefix')]"
-        }
-      },
-      {
-        "name": "[parameters('subnet2Name')]",
-        "properties": {
-          "addressPrefix": "[parameters('subnet2Prefix')]"
-        }
-      }
-    ],
-    "storageAccountId": "[resourceId(parameters('storageAccountExistingRG'),'Microsoft.Storage/StorageAccounts',parameters('storageAccountName'))]"
+    "availabilitySetName": "[concat(parameters('vmName'), '-avset')]",
+    "fwLockName": "[concat(parameters('vmName'), '-lock')]"
   },
   "resources": [         
     {
-      "apiVersion": "2015-06-15",
+      "name": "[variables('publicIPAddressName')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[parameters('publicIPAddressName')]",
+      "apiVersion": "2017-10-01",
       "location": "[resourceGroup().location]",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
         "dnsSettings": {
-          "domainNameLabel": "[parameters('publicIPAddressName')]"
+          "domainNameLabel": "[variables('publicIPAddressName')]"
         }
       }
     },
     {
-      "name": "[concat(variables('nicName'), '0')]",
+      "name": "[concat(variables('nicName'), variables('nicNameSuffixMgmt'))]",
       "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2017-10-01",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
       "dependsOn": [
-            "[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressName'))]"
+            "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
         ],
       "properties": {
         "ipConfigurations": [
           {
-            "name": "ipconfig-mgmt",
+            "name": "[concat('ipconfig', variables('nicNameSuffixMgmt'))]",
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('subnet0StartAddress')]",
               "publicIPAddress": {
-                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
               },
               "subnet": {
                 "id": "[variables('subnet0Ref')]"
@@ -247,17 +210,22 @@
       }
     },
     {
-      "name": "[concat(variables('nicName'), '1')]",
+      "name": "[concat(variables('nicName'), variables('nicNameSuffixUntrust'))]",
       "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2017-10-01",
       "location": "[resourceGroup().location]",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
        "dependsOn": [
             ],
-      "apiVersion": "2015-06-15",
       "properties": {
       "enableIPForwarding": true,
         "ipConfigurations": [
           {
-            "name": "ipconfig-untrust",
+            "name": "[concat('ipconfig', variables('nicNameSuffixUntrust'))]",
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('subnet1StartAddress')]",
@@ -270,15 +238,20 @@
       }
     },
     {
-      "name": "[concat(variables('nicName'), '2')]",
+      "name": "[concat(variables('nicName'), variables('nicNameSuffixTrust'))]",
       "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2017-10-01",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2015-06-15",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
           {
-            "name": "ipconfig-trust",
+            "name": "[concat('ipconfig', variables('nicNameSuffixTrust'))]",
             "properties": {
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('subnet2StartAddress')]",
@@ -289,66 +262,106 @@
           }
         ]
       }
-    },    
+    },
     {
-        "apiVersion": "[variables('apiVersion')]",
-        "type": "Microsoft.Compute/virtualMachines",
-        "name": "[parameters('vmName')]",
-        "location": "[resourceGroup().location]",
-        "dependsOn": [
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '0')]",
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '1')]",
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '2')]"
+      "name": "[variables('availabilitySetName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2018-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
+      "properties": {
+        "platformFaultDomainCount": 3,
+        "platformUpdateDomainCount": 5
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "name": "[parameters('vmName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-06-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "Owner": "[parameters('tagvalues').Owner]",
+        "Department": "[parameters('tagvalues').Department]",
+        "Application": "[parameters('tagvalues').Application]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), variables('nicNameSuffixMgmt'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), variables('nicNameSuffixUntrust'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), variables('nicNameSuffixTrust'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
+    ],
+      "plan": {
+          "name": "[parameters('imageSku')]",
+          "product": "[variables('imageOffer')]",
+          "publisher": "[variables('imagePublisher')]"
+      },
+      "properties": {
+          "hardwareProfile": {
+              "vmSize": "[parameters('vmSize')]"
+          },
+          "osProfile": {
+              "computerName": "[parameters('vmName')]",
+              "adminUsername": "[parameters('adminUsername')]",
+              "adminPassword": "[parameters('adminPassword')]"
+          },
+          "storageProfile": {
+              "imageReference": {
+                  "publisher": "[variables('imagePublisher')]",
+                  "offer": "[variables('imageOffer')]",
+                  "sku": "[parameters('imageSku')]",
+                  "version": "[parameters('imageVersion')]"
+              },
+              "osDisk": {
+                  "name": "[concat(parameters('vmName'), '-osDisk')]",
+                  "managedDisk": {
+                    "storageAccountType": "[parameters('managedDiskType')]"
+                  },
+                  "caching": "ReadWrite",
+                  "createOption": "FromImage",
+                  "diskSizeGB": 63
+              }
+          },
+          "availabilitySet": {
+            "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+          },
+          "networkProfile": {
+              "networkInterfaces": [{
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'-mgmt'))]",
+                  "properties": {
+                      "primary": true
+                  }
+              }, {
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'-untrust'))]",
+                  "properties": {
+                      "primary": false
+                  }
+              }, {
+                  "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'-trust'))]",
+                  "properties": {
+                      "primary": false
+                  }
+              }]
+          }
+      }
+    },
+    {
+      "name": "[concat(parameters('vmName'), '/Microsoft.Authorization/', variables('fwLockName'))]",
+      "type": "Microsoft.Compute/virtualMachines/providers/locks",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
       ],
-        "plan": {
-                "name": "[parameters('imageSku')]",
-           "product": "[variables('imageOffer')]",
-           "publisher": "[variables('imagePublisher')]"
-        },
-        "properties": {
-            "hardwareProfile": {
-                "vmSize": "[parameters('vmSize')]"
-            },
-            "osProfile": {
-                "computerName": "[parameters('vmName')]",
-                "adminUsername": "[parameters('adminUsername')]",
-                "adminPassword": "[parameters('adminPassword')]"
-            },
-            "storageProfile": {
-                "imageReference": {
-                    "publisher": "[variables('imagePublisher')]",
-                    "offer": "[variables('imageOffer')]",
-                    "sku": "[parameters('imageSku')]",
-                    "version": "[parameters('imageVersion')]"
-                },
-                "osDisk": {
-                    "name": "fwosdisk",
-                    "managedDisk": {
-                    },
-                    "caching": "ReadWrite",
-                    "createOption": "FromImage",
-                    "diskSizeGB": 60
-                }
-            },
-            "networkProfile": {
-                "networkInterfaces": [{
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'0'))]",
-                    "properties": {
-                        "primary": true
-                    }
-                }, {
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'1'))]",
-                    "properties": {
-                        "primary": false
-                    }
-                }, {
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'2'))]",
-                    "properties": {
-                        "primary": false
-                    }
-                }]
-            }
-        }
-    }    
+      "properties": {
+        "level": "CanNotDelete",
+        "notes": "This firewall appliance is set to not delete. Remove the lock first if intentionally deleting."
+      }
+    }
   ]
 }
